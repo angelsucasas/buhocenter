@@ -34,14 +34,25 @@ export class CommissionsService {
             .getOne();
     }
 
-    public async createCommission(CommissionData: CommissionDto, transactionalEntityManage: EntityManager) {
+    public async createCommission(CommissionData: CommissionDto, transactionalEntityManager: EntityManager) {
         try {
             const newCommission = new Commission();
             newCommission.serviceFee = CommissionData.serviceFee;
             newCommission.processorFee = CommissionData.processorFee;
             newCommission.status = await this._statusService.getStatusById(STATUS.ACTIVE.id);
+            let lastCommission;
 
-            const CommissionTransactionalRepository = await transactionalEntityManage.getRepository(
+            if (CommissionData.serviceFee == 0) {
+                lastCommission = await this.getLastCommission();
+                console.log(lastCommission);
+                newCommission.serviceFee = lastCommission.serviceFee;
+            }
+            if (CommissionData.processorFee == 0) {
+                lastCommission = await this.getLastCommission();
+                newCommission.processorFee = lastCommission.processorFee;                
+            }
+
+            const CommissionTransactionalRepository = await transactionalEntityManager.getRepository(
                 Commission,
             );
             await CommissionTransactionalRepository.save(newCommission);
@@ -79,9 +90,9 @@ export class CommissionsService {
 
     public async updateCommission(
         CommissionData: CommissionUpdateDto,
-        transactionalEntityManage: EntityManager,
+        transactionalEntityManager: EntityManager,
     ): Promise<string> {
-        const CommissionTransactionalRepository = await transactionalEntityManage.getRepository(Commission);
+        const CommissionTransactionalRepository = await transactionalEntityManager.getRepository(Commission);
 
         if (CommissionData.serviceFee > 0) {
             await this.updateServiceFee(
@@ -103,11 +114,11 @@ export class CommissionsService {
 
     public async deleteCommission(
         commissionId: number,
-        transactionalEntityManage: EntityManager,
+        transactionalEntityManager: EntityManager,
     ): Promise<boolean> {
         try {
             const inactive = await this._statusService.getStatusById(STATUS.INACTIVE.id);
-            const CommissionTransactionalRepository: Repository<Commission> = await transactionalEntityManage.getRepository(
+            const CommissionTransactionalRepository: Repository<Commission> = await transactionalEntityManager.getRepository(
                 Commission,
             );
             await CommissionTransactionalRepository.update({ id: commissionId }, { status: inactive });
@@ -132,5 +143,11 @@ export class CommissionsService {
         return await this._commissionRepository.find({
             where: { status: active },
         });
+    }
+
+    public async getLastCommission():Promise<Commission>{
+        return await this._commissionRepository.findOne({
+            order:{ id: "DESC"},
+        });          
     }
 }

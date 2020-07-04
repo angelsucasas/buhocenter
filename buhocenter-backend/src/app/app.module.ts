@@ -15,7 +15,7 @@ import { AuthModule } from '../modules/auth/auth.module';
 import * as dotenv from 'dotenv';
 import { DatabaseModule } from '../database/database.module';
 import { ConfigModule } from 'src/config/config.module';
-
+import { NotificationsModule } from '../modules/notifications/notifications.module'
 dotenv.config();
 
 @Module({
@@ -35,6 +35,7 @@ dotenv.config();
         SendGridModule.forRoot({
             apikey: process.env.SENDGRID_API_KEY,
         }),
+        NotificationsModule,
     ],
     controllers: [AppController],
     providers: [AppService],
