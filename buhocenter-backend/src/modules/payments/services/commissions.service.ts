@@ -43,8 +43,7 @@ export class CommissionsService {
             let lastCommission;
 
             if (CommissionData.serviceFee == 0) {
-                lastCommission = await this.getLastCommission();
-                console.log(lastCommission);
+                lastCommission = await this.getLastCommission();                
                 newCommission.serviceFee = lastCommission.serviceFee;
             }
             if (CommissionData.processorFee == 0) {
