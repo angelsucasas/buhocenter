@@ -83,9 +83,15 @@ export class CartsService {
             newProductCart.product = findProduct;
 
             let productOffer: Offer = await this.ProductsService.findOffer(findProduct.offer);
-            newProductCart.offerPrice =
+            if(Offer){
+                newProductCart.productPrice =
                 newProductCart.productPrice - (newProductCart.productPrice * productOffer.percentage) / 100;
 
+                newProductCart.offerPrice = productOffer.percentage;
+            }else{
+                newProductCart.offerPrice = 0;
+            }
+            
             await this._cartRepository.save(newProductCart);
             this._logger.debug(`createProductCart: product associate to users cart`, {
                 context: CartsService.name,

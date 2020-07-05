@@ -560,11 +560,20 @@ export class ProductsService {
         } 
     }
 
-    public async getPdfData(paymentId: number){
+    public async getPdfClientData(paymentId: number){
         return await this.productsRepository.query(
-                `SELECT p.name, p.price, c.quantity, c.product_price, c.offer_price, u.name, u.last_name, u.email, ad.first_street, ad.second_street, ad.city, ad.state, ad.zip_code, pay.transaction_id, pay.total, pay.total_cryptocurrency
+                `SELECT  u.id ,u.name, u.last_name, u.email, ad.first_street, ad.second_street, ad.city, ad.state, ad.zip_code, pay.transaction_id, pay.total, pay.total_cryptocurrency
+                    FROM users as u, addresses as ad, carts as c, payments as pay
+                    WHERE (pay.id = ${paymentId}) and (pay.id = c.payment_id) and (c.user_id = u.id) and (ad.id = pay.address_id)        
+                `.trim(),
+            );
+    }
+
+    public async getPdfCartData(paymentId: number){
+        return await this.productsRepository.query(
+                `SELECT distinct (p.id), p.name, p.price, c.quantity, c.product_price, c.offer_price
                     FROM users as u, addresses as ad, carts as c, products as p, payments as pay
-                    WHERE (pay.id = ${paymentId}) and (pay.id = c.payment_id) and (c.user_id = u.id) and (ad.id = pay.address_id) and (c.product_id = p.id)
+                    WHERE (pay.id = ${paymentId}) and (pay.id = c.payment_id) and (c.product_id = p.id)                   
                 `.trim(),
             );
     }

@@ -26,7 +26,7 @@ export class NotificationsController {
         private readonly pdfsService: PdfsService,
     ) {}
 
-    @Post('/:id')
+    @Get('/:id')
     async validateAddress(
         @Res() res: Response,
         @Param('id') paymentId: number,
@@ -35,7 +35,19 @@ export class NotificationsController {
             context: NotificationsController.name,
         });
         
-        let response = await this.pdfsService.sendPdf(paymentId);
-        return res.status(HttpStatus.OK).send(response);
+        let response = await this.pdfsService.createPdf(paymentId);
+        
+        const fs = require('fs');
+        const path = require('path');        
+        const filePath = './src/modules/notifications/pdf/document.pdf';
+  
+        const stream = fs.createReadStream(filePath);
+
+        res.writeHead(200, {
+            'Content-disposition': 'attachment; filename="' + encodeURIComponent(path.basename(filePath))  + '"',
+            'Content-type': 'application/pdf',
+        });        
+
+        stream.pipe(res);        
     }
 }
